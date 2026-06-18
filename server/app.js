@@ -24,8 +24,27 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined'));
+const allowedOrigins = [
+  config.clientUrl,
+  'http://localhost:5173',
+];
+
 app.use(cors({
-  origin: config.clientUrl,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    
+    // Strip trailing slashes for comparison
+    const sanitizedOrigin = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.includes(sanitizedOrigin) || 
+                      sanitizedOrigin.endsWith('.vercel.app') || 
+                      sanitizedOrigin === config.clientUrl;
+                      
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
