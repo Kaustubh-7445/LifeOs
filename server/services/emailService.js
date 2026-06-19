@@ -24,8 +24,12 @@ const https = require('https');
 
 const sendResendEmail = (to, subject, html, text) => {
   return new Promise((resolve, reject) => {
+    const fromEmail = (!process.env.EMAIL_FROM || process.env.EMAIL_FROM.includes('noreply@lifeos.app'))
+      ? 'LifeOS <onboarding@resend.dev>'
+      : config.email.from;
+
     const data = JSON.stringify({
-      from: config.email.from || 'onboarding@resend.dev',
+      from: fromEmail,
       to: [to],
       subject,
       html,
