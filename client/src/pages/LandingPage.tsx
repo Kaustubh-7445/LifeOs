@@ -86,7 +86,7 @@ export default function LandingPage() {
             </Link>
             <Link to="/login" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full sm:w-auto border-white/10 text-slate-300 hover:text-white hover:bg-white/5 hover:border-white/20 transition-all">
-                Try Live Demo
+                Sign In
               </Button>
             </Link>
           </div>

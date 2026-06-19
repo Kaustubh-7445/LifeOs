@@ -114,11 +114,7 @@ export default function LoginPage() {
 
           <GoogleLoginButton onSuccess={handleGoogleLogin} text="signin_with" />
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            Demo: <code className="text-primary-600">demo@lifeos.app</code> / <code className="text-primary-600">demo123</code>
-          </div>
-
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-gray-500">
             Don&apos;t have an account?{' '}
             <Link to="/register" className="text-primary-600 font-medium hover:text-primary-700">Sign up</Link>
           </p>
