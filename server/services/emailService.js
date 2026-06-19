@@ -20,10 +20,13 @@ const getTransporter = () => {
   return transporter;
 };
 
-const sendEmail = async ({ to, subject, html }) => {
+const sendEmail = async ({ to, subject, html, text }) => {
   const transport = getTransporter();
   if (!transport) {
     console.log(`[Email Mock] To: ${to} | Subject: ${subject}`);
+    if (text) {
+      console.log(`[Email Mock] Text Body: ${text}`);
+    }
     // Parse out OTP or Reset links for ease of local testing
     const otpMatch = html.match(/>(\d{6})<\/div>/) || html.match(/>(\d{6})</);
     if (otpMatch) {
@@ -35,7 +38,7 @@ const sendEmail = async ({ to, subject, html }) => {
     }
     return { mock: true };
   }
-  return transport.sendMail({ from: config.email.from, to, subject, html });
+  return transport.sendMail({ from: config.email.from, to, subject, html, text });
 };
 
 const sendResetPasswordEmail = async (email, resetToken) => {
@@ -49,7 +52,8 @@ const sendResetPasswordEmail = async (email, resetToken) => {
       <p style="color: #666; font-size: 12px;">If you didn't request this, ignore this email.</p>
     </div>
   `;
-  return sendEmail({ to: email, subject: 'LifeOS - Reset Your Password', html });
+  const text = `You requested a password reset. Please use the following link to reset your password: ${resetUrl}`;
+  return sendEmail({ to: email, subject: 'LifeOS - Reset Your Password', html, text });
 };
 
 const sendOtpEmail = async (email, otp) => {
@@ -69,7 +73,8 @@ const sendOtpEmail = async (email, otp) => {
       <p style="color: #94a3b8; font-size: 11px; text-align: center; line-height: 1.4; margin: 0;">If you didn't create an account with LifeOS, you can safely ignore this email.</p>
     </div>
   `;
-  return sendEmail({ to: email, subject: 'LifeOS - Verify Your Email', html });
+  const text = `Your lifeos verification otp is ${otp}`;
+  return sendEmail({ to: email, subject: 'LifeOS - Verify Your Email', html, text });
 };
 
 module.exports = { sendEmail, sendResetPasswordEmail, sendOtpEmail };
