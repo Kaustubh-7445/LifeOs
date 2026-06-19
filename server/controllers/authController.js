@@ -28,7 +28,14 @@ exports.register = asyncHandler(async (req, res) => {
     otpExpires,
   });
 
-  await sendOtpEmail(user.email, otpCode);
+  try {
+    await sendOtpEmail(user.email, otpCode);
+  } catch (emailError) {
+    // Delete the unverified user so they can try to register again
+    await User.deleteOne({ _id: user._id });
+    console.error('Email sending failed during registration:', emailError);
+    throw new AppError('Failed to send verification email. Please check your SMTP settings.', 500);
+  }
 
   res.status(201).json({
     success: true,
