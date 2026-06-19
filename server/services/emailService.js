@@ -20,7 +20,62 @@ const getTransporter = () => {
   return transporter;
 };
 
+const https = require('https');
+
+const sendResendEmail = (to, subject, html, text) => {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify({
+      from: config.email.from || 'onboarding@resend.dev',
+      to: [to],
+      subject,
+      html,
+      text,
+    });
+
+    const options = {
+      hostname: 'api.resend.com',
+      port: 443,
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length,
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(body));
+        } else {
+          reject(new Error(`Resend API returned status ${res.statusCode}: ${body}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.write(data);
+    req.end();
+  });
+};
+
 const sendEmail = async ({ to, subject, html, text }) => {
+  // If Resend API key is configured, use the HTTPS API to bypass SMTP block
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const result = await sendResendEmail(to, subject, html, text);
+      return result;
+    } catch (resendError) {
+      console.error('Resend API sending failed:', resendError);
+      throw resendError;
+    }
+  }
+
   const transport = getTransporter();
   if (!transport) {
     console.log(`[Email Mock] To: ${to} | Subject: ${subject}`);
