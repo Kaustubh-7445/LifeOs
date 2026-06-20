@@ -68,7 +68,64 @@ const sendResendEmail = (to, subject, html, text) => {
   });
 };
 
+const sendBrevoEmail = (to, subject, html, text) => {
+  return new Promise((resolve, reject) => {
+    const fromEmail = config.email.user || 'noreply@lifeos.app';
+    const fromName = 'LifeOS';
+
+    const data = JSON.stringify({
+      sender: { name: fromName, email: fromEmail },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: html,
+      textContent: text,
+    });
+
+    const options = {
+      hostname: 'api.brevo.com',
+      port: 443,
+      path: '/v3/smtp/email',
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY,
+        'content-length': data.length,
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(JSON.parse(body));
+        } else {
+          reject(new Error(`Brevo API returned status ${res.statusCode}: ${body}`));
+        }
+      });
+    });
+
+    req.on('error', (e) => reject(e));
+    req.write(data);
+    req.end();
+  });
+};
+
 const sendEmail = async ({ to, subject, html, text }) => {
+  // If Brevo API key is configured, use Brevo HTTPS API
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const result = await sendBrevoEmail(to, subject, html, text);
+      return result;
+    } catch (brevoError) {
+      console.error('Brevo API sending failed:', brevoError);
+      throw brevoError;
+    }
+  }
+
   // If Resend API key is configured, use the HTTPS API to bypass SMTP block
   if (process.env.RESEND_API_KEY) {
     try {
