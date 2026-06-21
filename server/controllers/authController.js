@@ -13,7 +13,7 @@ const googleClient = config.google.clientId
 
 exports.register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
-  const exists = await User.findOne({ email });
+  const exists = await User.findOne({ email: email.toLowerCase() });
   if (exists) throw new AppError('Email already registered', 400);
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -48,7 +48,7 @@ exports.verifyOtp = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) throw new AppError('Email and OTP are required', 400);
 
-  const user = await User.findOne({ email }).select('+otpCode +otpExpires');
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+otpCode +otpExpires');
   if (!user) throw new AppError('User not found', 404);
 
   if (user.isVerified) {
@@ -75,7 +75,7 @@ exports.resendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) throw new AppError('Email is required', 400);
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) throw new AppError('User not found', 404);
 
   if (user.isVerified) {
@@ -94,7 +94,7 @@ exports.resendOtp = asyncHandler(async (req, res) => {
 
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
   if (!user || !user.password) throw new AppError('Invalid credentials', 401);
 
   const isMatch = await user.comparePassword(password);
@@ -122,7 +122,7 @@ exports.googleLogin = asyncHandler(async (req, res) => {
   const payload = ticket.getPayload();
   const { sub: googleId, email, name, picture } = payload;
 
-  let user = await User.findOne({ $or: [{ googleId }, { email }] });
+  let user = await User.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
   if (!user) {
     user = await User.create({
       name,
@@ -178,7 +178,7 @@ exports.updateProfile = asyncHandler(async (req, res) => {
 });
 
 exports.forgotPassword = asyncHandler(async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
+  const user = await User.findOne({ email: req.body.email.toLowerCase() });
   if (!user) {
     return res.json({ success: true, message: 'If email exists, reset link sent' });
   }
