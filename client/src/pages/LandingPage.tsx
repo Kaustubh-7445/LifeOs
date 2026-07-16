@@ -24,7 +24,7 @@ const stats = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-950 text-slate-100 overflow-hidden font-sans selection:bg-primary-500/30">
+    <div className="relative min-h-screen bg-gray-950 text-slate-100 overflow-hidden font-sans selection:bg-primary-500/30">
       {/* Decorative blurred background lights */}
       <div className="absolute top-[-15%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-primary-600/10 blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[20%] right-[-10%] w-[50rem] h-[50rem] rounded-full bg-purple-600/10 blur-[130px] pointer-events-none" />
@@ -35,7 +35,7 @@ export default function LandingPage() {
 
       {/* Floating Glassmorphic Navbar */}
       <nav className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="glass backdrop-blur-md border border-white/10 dark:border-gray-800/40 rounded-2xl px-6 py-3.5 flex items-center justify-between shadow-lg shadow-black/10">
+        <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between shadow-lg shadow-black/10">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-md shadow-primary-500/10">
               <Sparkles className="w-4.5 h-4.5 text-white" />
@@ -44,14 +44,14 @@ export default function LandingPage() {
               LifeOS
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             <Link to="/login">
-              <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/5 transition-colors">
+              <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-white/5 transition-colors text-xs sm:text-sm px-2.5 py-1.5 sm:px-4 sm:py-2">
                 Sign In
               </Button>
             </Link>
             <Link to="/register">
-              <Button className="bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white shadow-lg shadow-primary-500/10 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all">
+              <Button className="bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white shadow-lg shadow-primary-500/10 rounded-xl font-semibold transition-all text-xs sm:text-sm px-3.5 py-2 sm:px-5 sm:py-2.5">
                 Get Started
               </Button>
             </Link>
@@ -193,9 +193,9 @@ export default function LandingPage() {
 
       {/* Interactive CTA Section */}
       <section className="relative z-10 px-6 lg:px-8 py-24 text-center">
-        <div className="glass-card max-w-4xl mx-auto p-12 relative overflow-hidden bg-gradient-to-b from-slate-900/60 to-slate-950/60 border border-white/10 shadow-2xl rounded-3xl">
+        <div className="glass-card max-w-4xl mx-auto p-6 sm:p-12 relative overflow-hidden bg-gradient-to-b from-slate-900/60 to-slate-950/60 border border-white/10 shadow-2xl rounded-3xl">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-primary-500/10 rounded-full blur-[100px] pointer-events-none" />
-          
+
           <Shield className="w-12 h-12 text-primary-400 mx-auto mb-5 shadow-inner" />
           <h2 className="text-3xl font-extrabold mb-4 text-white tracking-tight">Ready to Take Control?</h2>
           <p className="text-slate-400 mb-8 max-w-md mx-auto text-sm leading-relaxed">

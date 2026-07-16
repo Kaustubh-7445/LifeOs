@@ -10,7 +10,7 @@ module.exports = {
     accessExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   },
-  clientUrl: (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, ''),
+  clientUrl: (process.env.CLIENT_URL || 'http://localhost:5173').trim().replace(/\/$/, ''),
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',

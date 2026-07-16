@@ -32,8 +32,8 @@ export default function ResetPasswordPage() {
       setAuth(res.data.data.user, res.data.data.accessToken);
       toast.success('Password reset successful!');
       navigate('/dashboard');
-    } catch {
-      toast.error('Reset failed. Token may be expired.');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Reset failed. Token may be expired.');
     } finally {
       setLoading(false);
     }

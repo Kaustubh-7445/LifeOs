@@ -14,6 +14,12 @@ import { habitApi } from '@/services';
 import type { Habit } from '@/types';
 import { cn } from '@/utils';
 
+const POPULAR_EMOJIS = [
+  '🏃', '🧘', '💪', '🚴', '💧', '🥗', '🍎', '🚶',
+  '📚', '💻', '✍️', '🧠', '🎨', '🎵', '☀️', '🌙',
+  '🎯', '💼', '💰', '📈', '🧹', '🌱', '🔋', '🍵'
+];
+
 export default function HabitsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: '', icon: '🎯', color: '#6366f1' });
@@ -185,8 +191,30 @@ export default function HabitsPage() {
           className="space-y-4"
         >
           <Input label="Habit Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Select Icon</label>
+            <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 border border-gray-200 dark:border-gray-700/80 rounded-xl bg-gray-50 dark:bg-gray-900/40">
+              {POPULAR_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setForm({ ...form, icon: emoji })}
+                  className={cn(
+                    "text-2xl p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800/60 transition-all flex items-center justify-center cursor-pointer border",
+                    form.icon === emoji 
+                      ? "bg-primary-500/20 border-primary-500 text-primary-400" 
+                      : "border-transparent"
+                  )}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Icon (emoji)" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} />
+            <Input label="Custom Icon (emoji)" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} />
             <Input label="Color" type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
           </div>
           <Button type="submit" className="w-full" loading={createMutation.isPending}>Create Habit</Button>
