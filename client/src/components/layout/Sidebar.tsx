@@ -7,6 +7,7 @@ import { useAuthStore, useSidebarStore } from '@/store';
 import { authApi } from '@/services';
 import { cn, getInitials } from '@/utils';
 import toast from 'react-hot-toast';
+import logo from '@/assets/logo.png';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -75,9 +76,7 @@ export default function Sidebar() {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
+              <img src={logo} alt="LifeOS Logo" className="w-8 h-8 object-contain rounded-lg" />
               <span className="font-bold text-lg bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
                 LifeOS
               </span>

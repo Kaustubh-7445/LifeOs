@@ -5,6 +5,7 @@ import {
   BookOpen, Brain, Zap, Shield, Check,
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import logo from '@/assets/logo.png';
 
 const features = [
   { icon: Target, title: 'Smart Planner', desc: 'Manage tasks with responsive Kanban boards, calendar layouts, and smart prioritization.' },
@@ -37,9 +38,7 @@ export default function LandingPage() {
       <nav className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between shadow-lg shadow-black/10">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center shadow-md shadow-primary-500/10">
-              <Sparkles className="w-4.5 h-4.5 text-white" />
-            </div>
+            <img src={logo} alt="LifeOS Logo" className="w-9 h-9 object-contain rounded-xl" />
             <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
               LifeOS
             </span>

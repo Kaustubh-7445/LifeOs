@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import logo from '@/assets/logo.png';
 import toast from 'react-hot-toast';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -69,9 +69,7 @@ export default function RegisterPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
+            <img src={logo} alt="LifeOS Logo" className="w-10 h-10 object-contain rounded-xl" />
             <span className="font-bold text-xl">LifeOS</span>
           </Link>
           <h1 className="text-2xl font-bold">Create your account</h1>
