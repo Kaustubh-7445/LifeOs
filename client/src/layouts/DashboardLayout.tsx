@@ -10,7 +10,7 @@ export default function DashboardLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 relative overflow-hidden grid-bg">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0b0f19] relative overflow-hidden grid-bg">
       {/* Premium Background Glow Mesh */}
       <div className="absolute top-[-20%] left-[10%] w-[600px] h-[600px] rounded-full bg-primary-400/10 dark:bg-primary-600/5 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
       <div className="absolute bottom-[-20%] right-[10%] w-[600px] h-[600px] rounded-full bg-purple-400/10 dark:bg-purple-600/5 blur-[130px] pointer-events-none animate-pulse" style={{ animationDuration: '12s' }} />

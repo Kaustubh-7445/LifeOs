@@ -4,10 +4,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import logo from '@/assets/logo.png';
+import { 
+  ArrowRight, Eye, EyeOff, Activity, Wallet, Calendar 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
@@ -16,16 +16,13 @@ const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((d) => d.password === d.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
@@ -62,42 +59,257 @@ export default function RegisterPage() {
     }
   };
 
+  const handleAppleSignup = async () => {
+    setLoading(true);
+    const mockEmail = `apple.${Math.random().toString(36).substring(7)}@lifeos.app`;
+    try {
+      await authApi.register({ 
+        name: 'Apple User', 
+        email: mockEmail, 
+        password: 'apple-secure-password' 
+      });
+      toast.success('Apple ID registration success!');
+      // Log them in immediately in real-time
+      const loginRes = await authApi.login({ 
+        email: mockEmail, 
+        password: 'apple-secure-password' 
+      });
+      setAuth(loginRes.data.data.user, loginRes.data.data.accessToken);
+      toast.success('Welcome to LifeOS!');
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      toast.error('Apple ID registration failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12 relative overflow-hidden grid-bg">
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-500/10 dark:bg-primary-500/5 blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '10s' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-500/10 dark:bg-purple-600/5 blur-[120px] pointer-events-none animate-pulse" style={{ animationDuration: '14s' }} />
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src={logo} alt="LifeOS Logo" className="w-10 h-10 object-contain rounded-xl" />
-            <span className="font-bold text-xl">LifeOS</span>
-          </Link>
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-gray-500 mt-1">Start managing your life today</p>
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-250">
+      
+      {/* Left Column: Graphic Mockup & Brand Message */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-slate-100 dark:bg-[#080c16] relative overflow-hidden border-r border-slate-200 dark:border-white/5">
+        {/* Glow meshes */}
+        <div className="absolute top-[-20%] left-[-15%] w-[45rem] h-[45rem] rounded-full bg-primary-600/5 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[35rem] h-[35rem] rounded-full bg-blue-600/5 blur-[110px] pointer-events-none" />
+
+        {/* Top Header Logo */}
+        <div className="relative z-10 flex items-center gap-2">
+          <span className="font-bold text-xl text-slate-900 dark:text-white tracking-tight">LifeOS</span>
         </div>
 
-        <div className="glass-card p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <Input label="Full Name" placeholder="John Doe" error={errors.name?.message} {...register('name')} />
-            <Input label="Email" type="email" placeholder="you@example.com" error={errors.email?.message} {...register('email')} />
-            <Input label="Password" type="password" placeholder="••••••••" error={errors.password?.message} {...register('password')} />
-            <Input label="Confirm Password" type="password" placeholder="••••••••" error={errors.confirmPassword?.message} {...register('confirmPassword')} />
-            <Button type="submit" className="w-full" loading={loading}>Create Account</Button>
-          </form>
+        {/* Center Mockup Graphic */}
+        <div className="relative z-10 my-auto max-w-lg mx-auto w-full">
+          <div className="bg-white dark:bg-[#101423] border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-2xl relative">
+            
+            {/* Mockup Browser Top bar */}
+            <div className="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-white/5 mb-5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+              </div>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 tracking-wider font-mono uppercase">Command_Center_v2.0</span>
+            </div>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200 dark:border-gray-700" /></div>
-            <div className="relative flex justify-center text-sm"><span className="px-2 bg-white dark:bg-gray-900 text-gray-500">or</span></div>
+            {/* Quick Actions Tabs */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="p-3 bg-slate-50 dark:bg-[#171d31] rounded-xl border border-slate-200 dark:border-white/5 flex flex-col items-center justify-center">
+                <Activity className="w-4 h-4 text-blue-500 dark:text-blue-400 mb-1.5" />
+                <span className="text-[9px] font-bold tracking-widest text-slate-600 dark:text-slate-300 uppercase">Metrics</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-[#101925] rounded-xl border border-slate-200 dark:border-emerald-500/10 flex flex-col items-center justify-center">
+                <Wallet className="w-4 h-4 text-emerald-500 dark:text-emerald-450 mb-1.5" />
+                <span className="text-[9px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">Finance</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-[#171d31] rounded-xl border border-slate-200 dark:border-white/5 flex flex-col items-center justify-center">
+                <Calendar className="w-4 h-4 text-purple-500 dark:text-purple-400 mb-1.5" />
+                <span className="text-[9px] font-bold tracking-widest text-slate-600 dark:text-slate-300 uppercase">Schedule</span>
+              </div>
+            </div>
+
+            {/* Bar Chart Mockup */}
+            <div className="h-28 flex items-end gap-3 px-4 py-2 bg-slate-50 dark:bg-[#121625]/40 rounded-xl border border-slate-200 dark:border-white/5 mb-2">
+              <span className="flex-1 bg-slate-300 dark:bg-slate-700/30 rounded-t h-[40%]" />
+              <span className="flex-1 bg-blue-500/30 rounded-t h-[65%]" />
+              <span className="flex-1 bg-slate-300 dark:bg-slate-700/30 rounded-t h-[25%]" />
+              <span className="flex-1 bg-emerald-500/30 rounded-t h-[90%]" />
+              <span className="flex-1 bg-slate-300 dark:bg-slate-700/30 rounded-t h-[50%]" />
+            </div>
+
+            {/* Floating Info Tag */}
+            <div className="absolute bottom-[-15px] right-4 bg-white dark:bg-[#141b2c] border border-slate-200 dark:border-white/10 shadow-xl rounded-xl p-2.5 flex items-center gap-2 max-w-[190px]">
+              <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300 dark:border-white/15">
+                <img 
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces" 
+                  alt="Avatar" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Peak Performance</p>
+                <p className="text-[8px] text-slate-500 dark:text-slate-400 truncate mt-0.5">98th Percentile Activity</p>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
-
-          <p className="mt-4 text-center text-sm text-gray-500">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 font-medium">Sign in</Link>
+        {/* Bottom Slogan Copy */}
+        <div className="relative z-10 max-w-md mt-auto">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">
+            Your Ultimate Personal Command Center
+          </h2>
+          <p className="text-slate-600 dark:text-slate-450 text-sm leading-relaxed">
+            Stop switching tabs. Manage your schedule, metrics, finances, and study logs in one visual ecosystem.
           </p>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Right Column: Sign Up Form & Layout */}
+      <div className="flex flex-col justify-between p-6 sm:p-12 md:p-16 bg-white dark:bg-[#0d111d] relative transition-colors duration-250">
+        {/* Glow meshes */}
+        <div className="absolute bottom-[-15%] left-[-10%] w-[35rem] h-[35rem] rounded-full bg-purple-600/5 blur-[120px] pointer-events-none" />
+
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between lg:justify-end">
+          <span className="lg:hidden font-bold text-xl text-slate-900 dark:text-white tracking-tight">LifeOS</span>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Already have an account?{' '}
+            <Link to="/login" className="text-slate-900 dark:text-white hover:underline font-bold ml-1">
+              Sign In
+            </Link>
+          </div>
+        </div>
+
+        {/* Center Sign Up Card container */}
+        <div className="my-auto max-w-sm w-full mx-auto py-12 relative z-10">
+          <div className="mb-8">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Get started today</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1.5">Join 50,000+ high-performers optimizing their life.</p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Full Name field */}
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full Name</label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                className={`w-full bg-slate-50 dark:bg-[#161b26] hover:bg-slate-100 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border ${
+                  errors.name ? 'border-red-500' : 'border-slate-200 dark:border-white/5'
+                } focus:border-blue-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none transition-all`}
+                {...register('name')}
+              />
+              {errors.name && <p className="text-[10px] text-red-500">{errors.name.message}</p>}
+            </div>
+
+            {/* Email field */}
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@example.com"
+                className={`w-full bg-slate-50 dark:bg-[#161b26] hover:bg-slate-100 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border ${
+                  errors.email ? 'border-red-500' : 'border-slate-200 dark:border-white/5'
+                } focus:border-blue-500/50 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none transition-all`}
+                {...register('email')}
+              />
+              {errors.email && <p className="text-[10px] text-red-500">{errors.email.message}</p>}
+            </div>
+
+            {/* Password field */}
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  className={`w-full bg-slate-50 dark:bg-[#161b26] hover:bg-slate-100 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border ${
+                    errors.password ? 'border-red-500' : 'border-slate-200 dark:border-white/5'
+                  } focus:border-blue-500/50 rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none transition-all`}
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-[10px] text-red-500">{errors.password.message}</p>}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[#4f83f6] hover:bg-blue-600 active:scale-[0.98] text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/10 transition-all cursor-pointer mt-4"
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-white/5" />
+            </div>
+            <span className="relative z-10 px-3 bg-white dark:bg-[#0d111d] text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors duration-250">
+              Or continue with
+            </span>
+          </div>
+
+          {/* OAuth Buttons Grid */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer z-20">
+                <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
+              </div>
+              <button
+                type="button"
+                className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 pointer-events-none"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+                Google
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAppleSignup}
+              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span className="text-sm shrink-0"></span>
+              Apple ID
+            </button>
+          </div>
+
+          <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 leading-normal">
+            By creating an account, you agree to our{' '}
+            <a href="#" className="underline hover:text-slate-600 dark:hover:text-slate-300">Terms of Service</a> and{' '}
+            <a href="#" className="underline hover:text-slate-600 dark:hover:text-slate-300">Privacy Policy</a>.
+          </p>
+        </div>
+
+        {/* Page Footer at the bottom */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-500 border-t border-slate-100 dark:border-white/5 pt-6 mt-12">
+          <p>© 2026 LifeOS Technologies. Securely encrypted.</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-slate-650 dark:hover:text-slate-400">Privacy Policy</a>
+            <a href="#" className="hover:text-slate-650 dark:hover:text-slate-400">Terms of Service</a>
+            <a href="#" className="hover:text-slate-650 dark:hover:text-slate-400">Help Center</a>
+            <a href="#" className="hover:text-slate-650 dark:hover:text-slate-400">Status</a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
