@@ -5,6 +5,7 @@ import {
   BookOpen, Brain, Zap, Check, Shield, HelpCircle, Activity, ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logo from '@/assets/logo.png';
 
 const features = [
   { icon: Target, title: 'Planner', desc: 'Unified calendar and tasks manager built for trackable focus blocks.' },
@@ -59,6 +60,7 @@ export default function LandingPage() {
       <nav className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-2xl px-6 py-3 flex items-center justify-between shadow-lg shadow-black/20">
           <div className="flex items-center gap-2">
+            <img src={logo} alt="LifeOS Logo" className="w-7 h-7 object-contain rounded-lg" />
             <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-350 bg-clip-text text-transparent">
               LifeOS
             </span>
@@ -423,6 +425,7 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-white/5 py-10 bg-[#080c16]/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
+            <img src={logo} alt="LifeOS Logo" className="w-6 h-6 object-contain rounded-md" />
             <span className="font-bold text-base text-white">LifeOS</span>
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-[10px] text-slate-500 font-medium">

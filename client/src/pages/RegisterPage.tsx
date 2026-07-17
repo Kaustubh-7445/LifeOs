@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
+import logo from '@/assets/logo.png';
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -95,6 +96,7 @@ export default function RegisterPage() {
 
         {/* Top Header Logo */}
         <div className="relative z-10 flex items-center gap-2">
+          <img src={logo} alt="LifeOS Logo" className="w-7 h-7 object-contain rounded-lg" />
           <span className="font-bold text-xl text-slate-900 dark:text-white tracking-tight">LifeOS</span>
         </div>
 
@@ -172,7 +174,10 @@ export default function RegisterPage() {
 
         {/* Top Header Row */}
         <div className="flex items-center justify-between lg:justify-end">
-          <span className="lg:hidden font-bold text-xl text-slate-900 dark:text-white tracking-tight">LifeOS</span>
+          <div className="lg:hidden flex items-center gap-2">
+            <img src={logo} alt="LifeOS Logo" className="w-6 h-6 object-contain rounded-md" />
+            <span className="font-bold text-xl text-slate-900 dark:text-white tracking-tight">LifeOS</span>
+          </div>
           <div className="text-xs text-slate-500 dark:text-slate-400">
             Already have an account?{' '}
             <Link to="/login" className="text-slate-900 dark:text-white hover:underline font-bold ml-1">

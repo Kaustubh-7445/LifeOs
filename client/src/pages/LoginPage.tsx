@@ -12,6 +12,8 @@ import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
 
+import logo from '@/assets/logo.png';
+
 const schema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -95,7 +97,8 @@ export default function LoginPage() {
       <div className="absolute bottom-[-20%] right-[-15%] w-[45rem] h-[45rem] rounded-full bg-purple-600/5 blur-[120px] pointer-events-none" />
 
       {/* Top Header Logo & Branding */}
-      <div className="text-center mb-8 relative z-10">
+      <div className="text-center mb-8 relative z-10 flex flex-col items-center justify-center">
+        <img src={logo} alt="LifeOS Logo" className="w-12 h-12 object-contain rounded-xl mb-3" />
         <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">LifeOS</h1>
         <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 uppercase tracking-wider font-semibold">
           Your Ultimate Personal Command Center
