@@ -8,7 +8,7 @@ import {
   ArrowRight, Eye, EyeOff, Activity, Wallet, Calendar 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
 import logo from '@/assets/logo.png';
@@ -45,41 +45,30 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleLogin = async (credential: string) => {
-    setLoading(true);
-    try {
-      const res = await authApi.googleLogin(credential);
-      setAuth(res.data.data.user, res.data.data.accessToken);
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Google sign-up failed';
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [socialProvider, setSocialProvider] = useState<'google' | 'apple'>('google');
+
+  const handleOpenSocialModal = (provider: 'google' | 'apple') => {
+    setSocialProvider(provider);
+    setIsSocialModalOpen(true);
   };
 
-  const handleAppleSignup = async () => {
+  const handleSocialAuthSelect = async (email: string, name: string) => {
+    setIsSocialModalOpen(false);
     setLoading(true);
-    const mockEmail = `apple.${Math.random().toString(36).substring(7)}@lifeos.app`;
     try {
-      await authApi.register({ 
-        name: 'Apple User', 
-        email: mockEmail, 
-        password: 'apple-secure-password' 
+      const res = await authApi.socialAuth({
+        email,
+        name,
+        provider: socialProvider,
+        action: 'register'
       });
-      toast.success('Apple ID registration success!');
-      // Log them in immediately in real-time
-      const loginRes = await authApi.login({ 
-        email: mockEmail, 
-        password: 'apple-secure-password' 
-      });
-      setAuth(loginRes.data.data.user, loginRes.data.data.accessToken);
-      toast.success('Welcome to LifeOS!');
+      setAuth(res.data.data.user, res.data.data.accessToken);
+      toast.success(`Account created with ${socialProvider === 'google' ? 'Google' : 'Apple ID'}!`);
       navigate('/dashboard');
     } catch (err: unknown) {
-      toast.error('Apple ID registration failed.');
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || `${socialProvider === 'google' ? 'Google' : 'Apple'} registration failed`;
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -274,28 +263,32 @@ export default function RegisterPage() {
 
           {/* OAuth Buttons Grid */}
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="relative flex-1">
-              <div className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer z-20">
-                <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
-              </div>
-              <button
-                type="button"
-                className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 pointer-events-none"
-              >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
-                Google
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleOpenSocialModal('google')}
+              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+              Google
+            </button>
 
             <button
               type="button"
-              onClick={handleAppleSignup}
+              onClick={() => handleOpenSocialModal('apple')}
               className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <span className="text-sm shrink-0"></span>
               Apple ID
             </button>
           </div>
+
+          <SocialAuthModal
+            isOpen={isSocialModalOpen}
+            onClose={() => setIsSocialModalOpen(false)}
+            provider={socialProvider}
+            action="register"
+            onSelect={handleSocialAuthSelect}
+          />
 
           <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 leading-normal">
             By creating an account, you agree to our{' '}

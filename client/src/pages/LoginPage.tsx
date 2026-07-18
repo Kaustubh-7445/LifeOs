@@ -8,7 +8,7 @@ import {
   Mail, Lock, Eye, EyeOff 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
 
@@ -49,41 +49,39 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async (credential: string) => {
-    setLoading(true);
-    try {
-      const res = await authApi.googleLogin(credential);
-      setAuth(res.data.data.user, res.data.data.accessToken);
-      toast.success('Welcome back!');
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Google login failed';
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
+  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+  const [socialProvider, setSocialProvider] = useState<'google' | 'apple'>('google');
+
+  const handleOpenSocialModal = (provider: 'google' | 'apple') => {
+    setSocialProvider(provider);
+    setIsSocialModalOpen(true);
   };
 
-  const handleAppleLogin = async () => {
+  const handleSocialAuthSelect = async (email: string, name: string) => {
+    setIsSocialModalOpen(false);
     setLoading(true);
-    const email = 'apple-user@lifeos.app';
-    const password = 'apple-secure-password';
     try {
-      // 1. Try to login
-      const res = await authApi.login({ email, password });
+      const res = await authApi.socialAuth({
+        email,
+        name,
+        provider: socialProvider,
+        action: 'login'
+      });
       setAuth(res.data.data.user, res.data.data.accessToken);
-      toast.success('Signed in with Apple ID!');
+      toast.success(`Signed in with ${socialProvider === 'google' ? 'Google' : 'Apple ID'}!`);
       navigate('/dashboard');
     } catch (err: unknown) {
-      // 2. If user doesn't exist, create it first, then login
-      try {
-        await authApi.register({ name: 'Apple User', email, password });
-        const res = await authApi.login({ email, password });
-        setAuth(res.data.data.user, res.data.data.accessToken);
-        toast.success('Signed in with Apple ID!');
-        navigate('/dashboard');
-      } catch (regErr) {
-        toast.error('Apple ID authentication failed.');
+      const errorObj = err as { response?: { status?: number; data?: { message?: string } } };
+      const status = errorObj.response?.status;
+      const message = errorObj.response?.data?.message || `${socialProvider === 'google' ? 'Google' : 'Apple'} authentication failed`;
+
+      if (status === 404 || message.toLowerCase().includes('not registered') || message.toLowerCase().includes('sign up')) {
+        toast.error('This account is not registered. Redirecting to sign up...');
+        setTimeout(() => {
+          navigate('/register');
+        }, 1500);
+      } else {
+        toast.error(message);
       }
     } finally {
       setLoading(false);
@@ -184,28 +182,32 @@ export default function LoginPage() {
 
         {/* OAuth Buttons Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="relative flex-1">
-            <div className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer z-20">
-              <GoogleLoginButton onSuccess={handleGoogleLogin} text="signin_with" />
-            </div>
-            <button
-              type="button"
-              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 pointer-events-none"
-            >
-              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
-              Google
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => handleOpenSocialModal('google')}
+            className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+            Google
+          </button>
 
           <button
             type="button"
-            onClick={handleAppleLogin}
+            onClick={() => handleOpenSocialModal('apple')}
             className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <span className="text-sm shrink-0"></span>
             Apple
           </button>
         </div>
+
+        <SocialAuthModal
+          isOpen={isSocialModalOpen}
+          onClose={() => setIsSocialModalOpen(false)}
+          provider={socialProvider}
+          action="login"
+          onSelect={handleSocialAuthSelect}
+        />
       </motion.div>
 
       {/* Redirection Links */}

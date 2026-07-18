@@ -12,6 +12,8 @@ export const authApi = {
     api.post<ApiResponse<AuthData>>('/auth/login', data),
   googleLogin: (credential: string) =>
     api.post<ApiResponse<AuthData>>('/auth/google', { credential }),
+  socialAuth: (data: { email: string; name?: string; provider: 'google' | 'apple'; action: 'login' | 'register' }) =>
+    api.post<ApiResponse<AuthData>>('/auth/social-auth', data),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get<ApiResponse<{ user: User }>>('/auth/me'),
   updateProfile: (data: { name?: string; avatar?: string; preferences?: Partial<User['preferences']> }) =>

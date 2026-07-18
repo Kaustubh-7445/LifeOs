@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, select: false },
     avatar: { type: String, default: '' },
     googleId: { type: String, sparse: true },
+    appleId: { type: String, sparse: true },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     preferences: {
       theme: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },

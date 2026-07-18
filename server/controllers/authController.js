@@ -227,3 +227,49 @@ exports.changePassword = asyncHandler(async (req, res) => {
   await user.save();
   res.json({ success: true, message: 'Password changed successfully' });
 });
+
+exports.socialAuth = asyncHandler(async (req, res) => {
+  const { email, name, provider, action } = req.body;
+  if (!email) throw new AppError('Email is required', 400);
+  if (!provider) throw new AppError('Provider (google or apple) is required', 400);
+
+  const normalizedEmail = email.toLowerCase();
+  let user = await User.findOne({ email: normalizedEmail });
+
+  if (action === 'login') {
+    if (!user) {
+      throw new AppError('Account is not registered. Please sign up first.', 404);
+    }
+    // Update provider ID if not set
+    if (provider === 'google' && !user.googleId) {
+      user.googleId = `mock-google-${normalizedEmail}`;
+      await user.save();
+    } else if (provider === 'apple' && !user.appleId) {
+      user.appleId = `mock-apple-${normalizedEmail}`;
+      await user.save();
+    }
+    return sendTokenResponse(user, 200, res, `${provider === 'google' ? 'Google' : 'Apple'} login successful`);
+  } else if (action === 'register') {
+    if (!user) {
+      user = await User.create({
+        name: name || `${provider === 'google' ? 'Google' : 'Apple'} User`,
+        email: normalizedEmail,
+        isVerified: true, // Social signup is automatically verified
+        googleId: provider === 'google' ? `mock-google-${normalizedEmail}` : undefined,
+        appleId: provider === 'apple' ? `mock-apple-${normalizedEmail}` : undefined,
+      });
+    } else {
+      // User exists, link account
+      if (provider === 'google' && !user.googleId) {
+        user.googleId = `mock-google-${normalizedEmail}`;
+        await user.save();
+      } else if (provider === 'apple' && !user.appleId) {
+        user.appleId = `mock-apple-${normalizedEmail}`;
+        await user.save();
+      }
+    }
+    return sendTokenResponse(user, 200, res, `${provider === 'google' ? 'Google' : 'Apple'} registration successful`);
+  } else {
+    throw new AppError('Invalid action (login or register required)', 400);
+  }
+});
