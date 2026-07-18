@@ -10,8 +10,8 @@ export const authApi = {
     api.post<ApiResponse<null>>('/auth/resend-otp', { email }),
   login: (data: { email: string; password: string }) =>
     api.post<ApiResponse<AuthData>>('/auth/login', data),
-  googleLogin: (credential: string) =>
-    api.post<ApiResponse<AuthData>>('/auth/google', { credential }),
+  googleLogin: (credential: string, action?: 'login' | 'register') =>
+    api.post<ApiResponse<AuthData>>('/auth/google', { credential, action }),
   socialAuth: (data: { email: string; name?: string; provider: 'google' | 'apple'; action: 'login' | 'register' }) =>
     api.post<ApiResponse<AuthData>>('/auth/social-auth', data),
   logout: () => api.post('/auth/logout'),

@@ -8,6 +8,7 @@ import {
   ArrowRight, Eye, EyeOff, Activity, Wallet, Calendar 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
@@ -51,6 +52,21 @@ export default function RegisterPage() {
   const handleOpenSocialModal = (provider: 'google' | 'apple') => {
     setSocialProvider(provider);
     setIsSocialModalOpen(true);
+  };
+
+  const handleGoogleLogin = async (credential: string) => {
+    setLoading(true);
+    try {
+      const res = await authApi.googleLogin(credential, 'register');
+      setAuth(res.data.data.user, res.data.data.accessToken);
+      toast.success('Account created successfully!');
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Google sign-up failed';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialAuthSelect = async (email: string, name: string) => {
@@ -263,14 +279,29 @@ export default function RegisterPage() {
 
           {/* OAuth Buttons Grid */}
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <button
-              type="button"
-              onClick={() => handleOpenSocialModal('google')}
-              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
-              Google
-            </button>
+            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+              <div className="relative flex-1">
+                <div className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer z-20">
+                  <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
+                </div>
+                <button
+                  type="button"
+                  className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 pointer-events-none"
+                >
+                  <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+                  Google
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleOpenSocialModal('google')}
+                className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+                Google
+              </button>
+            )}
 
             <button
               type="button"

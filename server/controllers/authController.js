@@ -108,7 +108,7 @@ exports.login = asyncHandler(async (req, res) => {
 });
 
 exports.googleLogin = asyncHandler(async (req, res) => {
-  const { credential } = req.body;
+  const { credential, action } = req.body;
   if (!credential) throw new AppError('Google credential required', 400);
 
   if (!googleClient) {
@@ -122,19 +122,33 @@ exports.googleLogin = asyncHandler(async (req, res) => {
   const payload = ticket.getPayload();
   const { sub: googleId, email, name, picture } = payload;
 
-  let user = await User.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
-  if (!user) {
-    user = await User.create({
-      name,
-      email,
-      googleId,
-      avatar: picture || '',
-      isVerified: true,
-    });
-  } else if (!user.googleId) {
-    user.googleId = googleId;
-    user.avatar = user.avatar || picture || '';
-    await user.save();
+  const normalizedEmail = email.toLowerCase();
+  let user = await User.findOne({ $or: [{ googleId }, { email: normalizedEmail }] });
+
+  if (action === 'login') {
+    if (!user) {
+      throw new AppError('Account is not registered. Please sign up first.', 404);
+    }
+    if (!user.googleId) {
+      user.googleId = googleId;
+      user.avatar = user.avatar || picture || '';
+      await user.save();
+    }
+  } else {
+    // action === 'register' or default
+    if (!user) {
+      user = await User.create({
+        name,
+        email: normalizedEmail,
+        googleId,
+        avatar: picture || '',
+        isVerified: true,
+      });
+    } else if (!user.googleId) {
+      user.googleId = googleId;
+      user.avatar = user.avatar || picture || '';
+      await user.save();
+    }
   }
 
   sendTokenResponse(user, 200, res, 'Google login successful');

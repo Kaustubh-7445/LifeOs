@@ -8,6 +8,7 @@ import {
   Mail, Lock, Eye, EyeOff 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
@@ -55,6 +56,31 @@ export default function LoginPage() {
   const handleOpenSocialModal = (provider: 'google' | 'apple') => {
     setSocialProvider(provider);
     setIsSocialModalOpen(true);
+  };
+
+  const handleGoogleLogin = async (credential: string) => {
+    setLoading(true);
+    try {
+      const res = await authApi.googleLogin(credential, 'login');
+      setAuth(res.data.data.user, res.data.data.accessToken);
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number; data?: { message?: string } } };
+      const status = errorObj.response?.status;
+      const message = errorObj.response?.data?.message || 'Google login failed';
+
+      if (status === 404 || message.toLowerCase().includes('not registered') || message.toLowerCase().includes('sign up')) {
+        toast.error('This Google account is not registered. Redirecting to sign up...');
+        setTimeout(() => {
+          navigate('/register');
+        }, 1500);
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialAuthSelect = async (email: string, name: string) => {
@@ -182,14 +208,29 @@ export default function LoginPage() {
 
         {/* OAuth Buttons Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => handleOpenSocialModal('google')}
-            className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
-            Google
-          </button>
+          {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+            <div className="relative flex-1">
+              <div className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer z-20">
+                <GoogleLoginButton onSuccess={handleGoogleLogin} text="signin_with" />
+              </div>
+              <button
+                type="button"
+                className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 pointer-events-none"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+                Google
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleOpenSocialModal('google')}
+              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#0d111d] dark:hover:bg-[#101423] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+              Google
+            </button>
+          )}
 
           <button
             type="button"
