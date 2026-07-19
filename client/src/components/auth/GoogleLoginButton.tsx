@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useThemeStore } from '@/store';
 
 declare global {
   interface Window {
@@ -7,6 +8,12 @@ declare global {
         id: {
           initialize: (config: { client_id: string; callback: (res: { credential: string }) => void }) => void;
           renderButton: (el: HTMLElement, config: Record<string, unknown>) => void;
+          prompt: (callback?: (notification: {
+            isNotDisplayed: () => boolean;
+            getNotDisplayedReason: () => string;
+            isSkippedMoment: () => boolean;
+            getSkippedReason: () => string;
+          }) => void) => void;
         };
       };
     };
@@ -21,6 +28,7 @@ interface GoogleLoginButtonProps {
 export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: GoogleLoginButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
 
   const handleCallback = useCallback(
     (response: { credential: string }) => onSuccess(response.credential),
@@ -32,13 +40,26 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
 
     const init = () => {
       if (!window.google || !ref.current) return;
+      
+      // Initialize Google Identity Services
       window.google.accounts.id.initialize({ client_id: clientId, callback: handleCallback });
+      
+      // Render standard visible Google Button
       ref.current.innerHTML = '';
       window.google.accounts.id.renderButton(ref.current, {
-        theme: 'outline',
+        theme: resolvedTheme === 'dark' ? 'filled_blue' : 'outline',
         size: 'large',
         width: ref.current.offsetWidth || 320,
         text,
+      });
+
+      // Prompt One Tap real-time accounts selector
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed()) {
+          console.log('One Tap not displayed reason:', notification.getNotDisplayedReason());
+        } else if (notification.isSkippedMoment()) {
+          console.log('One Tap skipped reason:', notification.getSkippedReason());
+        }
       });
     };
 
@@ -58,7 +79,7 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
     script.async = true;
     script.onload = init;
     document.body.appendChild(script);
-  }, [clientId, handleCallback, text]);
+  }, [clientId, handleCallback, text, resolvedTheme]);
 
   if (!clientId) {
     return (
@@ -68,5 +89,5 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
     );
   }
 
-  return <div ref={ref} className="w-full flex justify-center" />;
+  return <div ref={ref} className="w-full flex justify-center min-h-[40px]" />;
 }
