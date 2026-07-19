@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore, useSidebarStore } from '@/store';
 import { authApi } from '@/services';
-import { cn } from '@/utils';
+import { cn, getInitials } from '@/utils';
 import toast from 'react-hot-toast';
 import logo from '@/assets/logo.png';
 
@@ -101,12 +101,16 @@ export default function Sidebar() {
         <div className="p-4 border-t border-slate-200 dark:border-white/5 space-y-1.5">
           {user && !isCollapsed && (
             <div className="flex items-center gap-3 p-2.5 rounded-xl bg-transparent mb-3">
-              <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-slate-200 dark:border-white/10">
-                <img 
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=faces" 
-                  alt={user.name} 
-                  className="w-full h-full object-cover" 
-                />
+              <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold overflow-hidden border border-slate-200 dark:border-white/10 shrink-0">
+                {user.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name} 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  getInitials(user.name)
+                )}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-slate-900 dark:text-white truncate leading-tight">{user.name}</p>
