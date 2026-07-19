@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
+const realtimeSocialService = require('../services/realtimeSocialService');
 const User = require('../models/User');
 const AppError = require('../utils/AppError');
 const { asyncHandler, sendTokenResponse } = require('../utils/helpers');
@@ -151,6 +152,9 @@ exports.googleLogin = asyncHandler(async (req, res) => {
     }
   }
 
+  // Broadcast updated social accounts in real time
+  realtimeSocialService.broadcastSocialAccounts().catch(err => console.error(err));
+
   sendTokenResponse(user, 200, res, 'Google login successful');
 });
 
@@ -262,6 +266,7 @@ exports.socialAuth = asyncHandler(async (req, res) => {
       user.appleId = `mock-apple-${normalizedEmail}`;
       await user.save();
     }
+    realtimeSocialService.broadcastSocialAccounts().catch(err => console.error(err));
     return sendTokenResponse(user, 200, res, `${provider === 'google' ? 'Google' : 'Apple'} login successful`);
   } else if (action === 'register') {
     if (!user) {
@@ -282,8 +287,13 @@ exports.socialAuth = asyncHandler(async (req, res) => {
         await user.save();
       }
     }
+    realtimeSocialService.broadcastSocialAccounts().catch(err => console.error(err));
     return sendTokenResponse(user, 200, res, `${provider === 'google' ? 'Google' : 'Apple'} registration successful`);
   } else {
     throw new AppError('Invalid action (login or register required)', 400);
   }
+});
+
+exports.streamSocialAccounts = asyncHandler(async (req, res) => {
+  await realtimeSocialService.addClient(res);
 });

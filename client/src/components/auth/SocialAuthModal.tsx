@@ -1,6 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, ArrowRight } from 'lucide-react';
+import { API_URL } from '@/services/api';
+
+interface SocialAccount {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  provider: 'google' | 'apple';
+  lastLogin: string;
+  createdAt: string;
+}
 
 interface SocialAuthModalProps {
   isOpen: boolean;
@@ -20,8 +31,40 @@ export default function SocialAuthModal({
   const [customEmail, setCustomEmail] = useState('');
   const [customName, setCustomName] = useState('');
   const [error, setError] = useState('');
+  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [connecting, setConnecting] = useState(true);
 
   const isGoogle = provider === 'google';
+
+  // Real-time EventSource account list stream
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setConnecting(true);
+    const streamUrl = `${API_URL}/auth/social-accounts/live`;
+    const eventSource = new EventSource(streamUrl, { withCredentials: true });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (Array.isArray(data)) {
+          setAccounts(data);
+        }
+        setConnecting(false);
+      } catch (err) {
+        console.error('Error parsing social accounts stream:', err);
+      }
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('EventSource failed:', err);
+      setConnecting(false);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [isOpen]);
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +94,8 @@ export default function SocialAuthModal({
     resetForm();
     onClose();
   };
+
+  const providerAccounts = accounts.filter((acc) => acc.provider === provider);
 
   return (
     <AnimatePresence>
@@ -97,8 +142,80 @@ export default function SocialAuthModal({
                 {action === 'login' ? 'Sign in with' : 'Sign up with'} {isGoogle ? 'Google' : 'Apple'}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Enter your {isGoogle ? 'Google' : 'Apple ID'} email to proceed
+                Select an account or connect a new one
               </p>
+            </div>
+
+            {/* Real-time Accounts Grid */}
+            <div className="space-y-2.5 mb-5">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <span>Available Accounts</span>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                </label>
+                <span className="text-[9px] text-slate-405 dark:text-slate-500 font-medium">Real-time Stream</span>
+              </div>
+
+              {connecting && accounts.length === 0 ? (
+                <div className="py-6 flex flex-col items-center justify-center gap-2 border border-dashed border-slate-200 dark:border-white/5 rounded-xl bg-slate-50/50 dark:bg-[#0d111d]/50">
+                  <span className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[10px] text-slate-400">Connecting stream...</span>
+                </div>
+              ) : providerAccounts.length === 0 ? (
+                <div className="py-6 px-4 text-center border border-dashed border-slate-200 dark:border-white/5 rounded-xl bg-slate-50/50 dark:bg-[#0d111d]/50">
+                  <p className="text-[10px] text-slate-400 leading-normal">
+                    No simulated {isGoogle ? 'Google' : 'Apple'} accounts found. Connect a new one below!
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/5">
+                  {providerAccounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => onSelect(acc.email, acc.name)}
+                      className="w-full flex items-center gap-3 p-2.5 text-left bg-slate-50 hover:bg-blue-50/50 dark:bg-[#0d111d] dark:hover:bg-[#161f36] border border-slate-200 dark:border-white/5 hover:border-blue-500/30 rounded-xl transition-all cursor-pointer group active:scale-[0.99]"
+                    >
+                      {/* Avatar / Monogram */}
+                      <div className="relative shrink-0 w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-white/10 flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-[10px] font-bold text-slate-750 dark:text-slate-205">
+                        {acc.avatar ? (
+                          <img src={acc.avatar} alt={acc.name} className="w-full h-full object-cover" />
+                        ) : (
+                          acc.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-850 dark:text-slate-200 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors truncate">
+                          {acc.name}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-550 truncate mt-0.5">
+                          {acc.email}
+                        </p>
+                      </div>
+
+                      {/* Sign In Indicator */}
+                      <div className="text-[10px] font-bold text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity pr-1">
+                        Select &rarr;
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Divider to New Account Connect */}
+            <div className="relative my-5 text-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-white/5" />
+              </div>
+              <span className="relative z-10 px-3 bg-white dark:bg-[#161b26] text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                Or connect a new account
+              </span>
             </div>
 
             {/* Main Area Form */}
