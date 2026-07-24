@@ -17,7 +17,16 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
-      setAuth: (user, accessToken) => set({ user, accessToken, isAuthenticated: true }),
+      setAuth: (user, accessToken) => {
+        if (user?.email) {
+          try {
+            localStorage.setItem('lifeos_last_user_email', user.email);
+          } catch {
+            // ignore storage errors
+          }
+        }
+        set({ user, accessToken, isAuthenticated: true });
+      },
       setUser: (user) => set({ user }),
       logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
     }),

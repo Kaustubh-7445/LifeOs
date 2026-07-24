@@ -69,6 +69,8 @@ exports.verifyOtp = asyncHandler(async (req, res) => {
   user.otpExpires = undefined;
   await user.save();
 
+  realtimeSocialService.broadcastSocialAccounts().catch(err => console.error(err));
+
   sendTokenResponse(user, 200, res, 'Verification successful');
 });
 

@@ -3,24 +3,25 @@ const User = require('../models/User');
 let clients = [];
 
 const fetchSocialAccounts = async () => {
-  const users = await User.find({
-    $or: [
-      { googleId: { $exists: true, $ne: null, $ne: '' } },
-      { appleId: { $exists: true, $ne: null, $ne: '' } },
-    ],
-  }).sort({ lastLogin: -1, createdAt: -1 });
+  const users = await User.find({}).sort({ lastLogin: -1, updatedAt: -1, createdAt: -1 });
 
   return users.map(user => {
-    let provider = 'google';
-    if (user.appleId && !user.googleId) {
+    let provider = 'all';
+    if (user.googleId && !user.appleId) {
+      provider = 'google';
+    } else if (user.appleId && !user.googleId) {
       provider = 'apple';
     }
+
     return {
       id: user._id,
       name: user.name,
       email: user.email,
       avatar: user.avatar || '',
       provider,
+      hasGoogle: !!user.googleId,
+      hasApple: !!user.appleId,
+      isVerified: !!user.isVerified,
       lastLogin: user.lastLogin || user.updatedAt,
       createdAt: user.createdAt,
     };
