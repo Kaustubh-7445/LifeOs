@@ -25,19 +25,28 @@ exports.getTask = asyncHandler(async (req, res) => {
 });
 
 exports.createTask = asyncHandler(async (req, res) => {
-  const task = await Task.create({ ...req.body, user: req.user._id });
+  const payload = { ...req.body };
+  delete payload.user;
+  const task = await Task.create({ ...payload, user: req.user._id });
   res.status(201).json({ success: true, message: 'Task created', data: { task } });
 });
 
 exports.updateTask = asyncHandler(async (req, res) => {
-  let task = await Task.findOne({ _id: req.params.id, user: req.user._id });
-  if (!task) throw new AppError('Task not found', 404);
+  const existingTask = await Task.findOne({ _id: req.params.id, user: req.user._id });
+  if (!existingTask) throw new AppError('Task not found', 404);
 
-  if (req.body.status === 'done' && task.status !== 'done') {
-    req.body.completedAt = new Date();
+  const updates = { ...req.body };
+  delete updates.user;
+
+  if (updates.status === 'done' && existingTask.status !== 'done') {
+    updates.completedAt = new Date();
   }
 
-  task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const task = await Task.findOneAndUpdate(
+    { _id: req.params.id, user: req.user._id },
+    updates,
+    { new: true, runValidators: true }
+  );
   res.json({ success: true, message: 'Task updated', data: { task } });
 });
 

@@ -41,10 +41,10 @@ export default function Sidebar() {
       onClick={() => setOpen(false)}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200',
+          'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
           isActive
-            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10'
-            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
+            ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25 dark:bg-primary-600'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
         )
       }
     >
@@ -125,10 +125,10 @@ export default function Sidebar() {
             to="/settings"
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200',
+                'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                 isActive
-                  ? 'bg-blue-600 text-white'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25 dark:bg-primary-600'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
               )
             }
           >

@@ -38,5 +38,6 @@ goalSchema.virtual('progress').get(function () {
 
 goalSchema.set('toJSON', { virtuals: true });
 goalSchema.set('toObject', { virtuals: true });
+goalSchema.index({ user: 1, status: 1, category: 1 });
 
 module.exports = mongoose.model('Goal', goalSchema);

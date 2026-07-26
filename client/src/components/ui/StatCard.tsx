@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/utils';
 
@@ -11,7 +12,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export default function StatCard({ title, value, subtitle, icon: Icon, trend, color = '#6366f1', className }: StatCardProps) {
+function StatCard({ title, value, subtitle, icon: Icon, trend, color = '#6366f1', className }: StatCardProps) {
   return (
     <div className={cn('glass-card p-5 hover:shadow-xl hover:border-primary-500/20 transition-all duration-300 group', className)}>
       <div className="flex items-start justify-between">
@@ -35,3 +36,5 @@ export default function StatCard({ title, value, subtitle, icon: Icon, trend, co
     </div>
   );
 }
+
+export default memo(StatCard);

@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const AppError = require('./AppError');
 
 const asyncHandler = (fn) => (req, res, next) => {
@@ -7,7 +8,8 @@ const asyncHandler = (fn) => (req, res, next) => {
 const sendTokenResponse = (user, statusCode, res, message = 'Success') => {
   const { accessToken, refreshToken } = user.generateTokens();
 
-  user.refreshToken = refreshToken;
+  const hashedRefreshToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
+  user.refreshToken = hashedRefreshToken;
   user.lastLogin = new Date();
   user.save({ validateBeforeSave: false });
 

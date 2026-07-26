@@ -2,6 +2,12 @@ const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const realtimeSocialService = require('../services/realtimeSocialService');
 const User = require('../models/User');
+const Task = require('../models/Task');
+const Habit = require('../models/Habit');
+const Goal = require('../models/Goal');
+const Expense = require('../models/Expense');
+const LearningResource = require('../models/LearningResource');
+const Analytics = require('../models/Analytics');
 const AppError = require('../utils/AppError');
 const { asyncHandler, sendTokenResponse } = require('../utils/helpers');
 const { generateResetToken, verifyRefreshToken } = require('../utils/tokens');
@@ -18,6 +24,7 @@ exports.register = asyncHandler(async (req, res) => {
   if (exists) throw new AppError('Email already registered', 400);
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
   const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
   const user = await User.create({
@@ -25,7 +32,7 @@ exports.register = asyncHandler(async (req, res) => {
     email,
     password,
     isVerified: false,
-    otpCode,
+    otpCode: hashedOtp,
     otpExpires,
   });
 
@@ -56,7 +63,8 @@ exports.verifyOtp = asyncHandler(async (req, res) => {
     throw new AppError('Account is already verified. Please log in.', 400);
   }
 
-  if (user.otpCode !== otp) {
+  const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+  if (user.otpCode !== hashedOtp) {
     throw new AppError('Invalid OTP code', 400);
   }
 
@@ -86,7 +94,8 @@ exports.resendOtp = asyncHandler(async (req, res) => {
   }
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  user.otpCode = otpCode;
+  const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+  user.otpCode = hashedOtp;
   user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
   await user.save();
 
@@ -165,8 +174,9 @@ exports.refreshToken = asyncHandler(async (req, res) => {
   if (!token) throw new AppError('Refresh token required', 401);
 
   const decoded = verifyRefreshToken(token);
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   const user = await User.findById(decoded.id).select('+refreshToken');
-  if (!user || user.refreshToken !== token) {
+  if (!user || user.refreshToken !== hashedToken) {
     throw new AppError('Invalid refresh token', 401);
   }
 
@@ -298,4 +308,26 @@ exports.socialAuth = asyncHandler(async (req, res) => {
 
 exports.streamSocialAccounts = asyncHandler(async (req, res) => {
   await realtimeSocialService.addClient(res);
+});
+
+exports.deleteAccount = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  await Promise.all([
+    Task.deleteMany({ user: userId }),
+    Habit.deleteMany({ user: userId }),
+    Goal.deleteMany({ user: userId }),
+    Expense.deleteMany({ user: userId }),
+    LearningResource.deleteMany({ user: userId }),
+    Analytics.deleteMany({ user: userId }),
+    User.deleteOne({ _id: userId }),
+  ]);
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  });
+
+  res.json({ success: true, message: 'Account and all associated data deleted successfully' });
 });

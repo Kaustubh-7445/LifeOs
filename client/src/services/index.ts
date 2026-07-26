@@ -24,6 +24,7 @@ export const authApi = {
     api.post<ApiResponse<AuthData>>('/auth/reset-password', { token, password }),
   changePassword: (currentPassword: string, newPassword: string) =>
     api.put('/auth/change-password', { currentPassword, newPassword }),
+  deleteAccount: () => api.delete('/auth/account'),
 };
 
 export const taskApi = {

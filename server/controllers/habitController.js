@@ -3,25 +3,59 @@ const AppError = require('../utils/AppError');
 const { asyncHandler } = require('../utils/helpers');
 
 const updateStreak = (habit) => {
-  const sorted = habit.completions
-    .filter((c) => c.completed)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (!habit.completions || habit.completions.length === 0) {
+    habit.streak = 0;
+    return;
+  }
 
-  let streak = 0;
+  const completedDates = Array.from(
+    new Set(
+      habit.completions
+        .filter((c) => c.completed)
+        .map((c) => {
+          const d = new Date(c.date);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime();
+        })
+    )
+  ).sort((a, b) => b - a);
+
+  if (completedDates.length === 0) {
+    habit.streak = 0;
+    return;
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayTime = today.getTime();
 
-  for (let i = 0; i < sorted.length; i++) {
-    const expected = new Date(today);
-    expected.setDate(today.getDate() - i);
-    const compDate = new Date(sorted[i].date);
-    compDate.setHours(0, 0, 0, 0);
-    if (compDate.getTime() === expected.getTime()) streak++;
-    else break;
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const yesterdayTime = yesterday.getTime();
+
+  const latestTime = completedDates[0];
+
+  if (latestTime !== todayTime && latestTime !== yesterdayTime) {
+    habit.streak = 0;
+    return;
+  }
+
+  let currentExpected = new Date(latestTime);
+  let streak = 0;
+
+  for (const time of completedDates) {
+    if (time === currentExpected.getTime()) {
+      streak++;
+      currentExpected.setDate(currentExpected.getDate() - 1);
+    } else if (time < currentExpected.getTime()) {
+      break;
+    }
   }
 
   habit.streak = streak;
-  if (streak > habit.bestStreak) habit.bestStreak = streak;
+  if (streak > habit.bestStreak) {
+    habit.bestStreak = streak;
+  }
 };
 
 exports.getHabits = asyncHandler(async (req, res) => {

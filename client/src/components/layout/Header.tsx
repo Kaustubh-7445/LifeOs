@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Search } from 'lucide-react';
 import { useThemeStore } from '@/store';
 import { MobileMenuButton } from './Sidebar';
 import NotificationsPanel from './NotificationsPanel';
@@ -7,9 +7,10 @@ interface HeaderProps {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  onOpenCommandPalette?: () => void;
 }
 
-export default function Header({ title, subtitle, action }: HeaderProps) {
+export default function Header({ title, subtitle, action, onOpenCommandPalette }: HeaderProps) {
   const { resolvedTheme, setTheme } = useThemeStore();
 
   const toggleTheme = () => {
@@ -27,7 +28,21 @@ export default function Header({ title, subtitle, action }: HeaderProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {onOpenCommandPalette && (
+            <button
+              onClick={onOpenCommandPalette}
+              className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+              aria-label="Open command palette"
+            >
+              <Search className="w-4 h-4 text-gray-400" />
+              <span>Search or command...</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+                ⌘K
+              </kbd>
+            </button>
+          )}
+
           {action}
           <button
             onClick={toggleTheme}

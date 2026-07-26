@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Search, Plus, Bell, Bot, Zap, Wallet, BookOpen, RefreshCw, 
-  ShieldCheck, Check, Droplet, Flame, Book, Sun, Moon
+  ShieldCheck, Check, Droplet, Flame, Book, Sun, Moon, Sparkles, X, Target
 } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { analyticsApi, aiApi } from '@/services';
@@ -37,6 +39,16 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const { resolvedTheme, setTheme } = useThemeStore();
+  const outletContext = useOutletContext<{ openCommandPalette?: () => void }>();
+  const navigate = useNavigate();
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('lifeos_dismiss_onboarding');
+  });
+
+  const dismissOnboarding = () => {
+    localStorage.setItem('lifeos_dismiss_onboarding', 'true');
+    setShowOnboarding(false);
+  };
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard'],
@@ -149,19 +161,22 @@ export default function DashboardPage() {
           {/* Search Input */}
           <div className="relative hidden md:block">
             <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Command + K to search..."
-              className="w-64 bg-slate-100 dark:bg-[#161b26] hover:bg-slate-200 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border border-slate-200 dark:border-white/5 focus:border-blue-500/50 rounded-full py-1.5 pl-10 pr-4 text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-all cursor-pointer"
-              onClick={() => toast('Search feature coming soon!', { icon: '🔍' })}
-              readOnly
-            />
+            <button
+              type="button"
+              onClick={() => outletContext?.openCommandPalette?.()}
+              className="w-64 bg-slate-100 dark:bg-[#161b26] hover:bg-slate-200 dark:hover:bg-[#1a202d] border border-slate-200 dark:border-white/5 rounded-full py-1.5 pl-10 pr-4 text-xs text-left text-slate-400 dark:text-slate-400 flex items-center justify-between transition-all cursor-pointer"
+            >
+              <span>Search commands...</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-semibold bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-500">
+                ⌘K
+              </kbd>
+            </button>
           </div>
 
           {/* Quick Add Button */}
           <button 
-            onClick={() => toast.success('Quick Add opened')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/10 transition-colors cursor-pointer"
+            onClick={() => outletContext?.openCommandPalette?.()}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Quick Add</span>
@@ -187,6 +202,56 @@ export default function DashboardPage() {
         initial="hidden"
         animate="show"
       >
+        {/* User Interactive Onboarding Banner */}
+        {showOnboarding && (
+          <motion.div
+            variants={itemVariants}
+            className="bg-gradient-to-r from-primary-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-start justify-between relative z-10">
+              <div className="space-y-2 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-300 animate-bounce" />
+                  <h2 className="text-lg font-bold">Welcome to LifeOS! Quick setup guide:</h2>
+                </div>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  Get the most out of your personal operating system in 3 simple steps:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <button
+                    onClick={() => navigate('/goals')}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-semibold transition-colors text-left"
+                  >
+                    <Target className="w-4 h-4 text-emerald-300" />
+                    <span>1. Set a Goal</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/habits')}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-semibold transition-colors text-left"
+                  >
+                    <Zap className="w-4 h-4 text-yellow-300" />
+                    <span>2. Track Habits</span>
+                  </button>
+                  <button
+                    onClick={() => outletContext?.openCommandPalette?.()}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-xs font-semibold transition-colors text-left"
+                  >
+                    <Bot className="w-4 h-4 text-blue-300" />
+                    <span>3. Cmd+K Actions</span>
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={dismissOnboarding}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors"
+                aria-label="Dismiss onboarding banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
         {/* Row 1: AI Insights and Productivity Ring */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AI Insights Card */}

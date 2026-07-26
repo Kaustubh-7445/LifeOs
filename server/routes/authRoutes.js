@@ -28,5 +28,6 @@ router.post('/logout', authController.logout);
 router.get('/me', authController.getMe);
 router.put('/profile', updateProfileValidation, validate, authController.updateProfile);
 router.put('/change-password', authController.changePassword);
+router.delete('/account', authController.deleteAccount);
 
 module.exports = router;

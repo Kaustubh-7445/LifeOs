@@ -1,13 +1,27 @@
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from '@/components/layout/Sidebar';
 import AICopilot from '@/components/layout/AICopilot';
+import CommandPalette from '@/components/layout/CommandPalette';
 import { useSidebarStore } from '@/store';
 import { cn } from '@/utils';
 
 export default function DashboardLayout() {
   const { isCollapsed } = useSidebarStore();
   const location = useLocation();
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0b0f19] relative overflow-hidden grid-bg">
@@ -28,10 +42,14 @@ export default function DashboardLayout() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
-          <Outlet />
+          <Outlet context={{ openCommandPalette: () => setIsCommandPaletteOpen(true) }} />
         </motion.div>
       </main>
       <AICopilot />
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
     </div>
   );
 }

@@ -6,6 +6,29 @@ const { asyncHandler, paginate } = require('../utils/helpers');
 const startOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth(), 1);
 const endOfMonth = (date = new Date()) => new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
 
+const syncBudgetSpent = async (userId, categories) => {
+  const catList = Array.isArray(categories) ? categories : [categories];
+  const uniqueCats = Array.from(new Set(catList.filter(Boolean)));
+  if (uniqueCats.length === 0) return;
+
+  for (const category of uniqueCats) {
+    const budgets = await Budget.find({ user: userId, category, isActive: true });
+    if (!budgets.length) continue;
+
+    const totalExpense = await Expense.aggregate([
+      { $match: { user: userId, category, type: 'expense' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+
+    const spentAmount = totalExpense[0] ? totalExpense[0].total : 0;
+
+    await Budget.updateMany(
+      { user: userId, category, isActive: true },
+      { $set: { spent: spentAmount } }
+    );
+  }
+};
+
 exports.getExpenses = asyncHandler(async (req, res) => {
   const { type, category, month, year, page, limit } = req.query;
   const filter = { user: req.user._id };
@@ -28,38 +51,39 @@ exports.getExpenses = asyncHandler(async (req, res) => {
 });
 
 exports.createExpense = asyncHandler(async (req, res) => {
-  const expense = await Expense.create({ ...req.body, user: req.user._id });
+  const payload = { ...req.body };
+  delete payload.user;
+  const expense = await Expense.create({ ...payload, user: req.user._id });
 
-  if (expense.type === 'expense') {
-    const budgets = await Budget.find({
-      user: req.user._id,
-      category: expense.category,
-      isActive: true,
-    });
-    await Promise.all(
-      budgets.map((b) => {
-        b.spent += expense.amount;
-        return b.save();
-      })
-    );
-  }
+  await syncBudgetSpent(req.user._id, expense.category);
 
   res.status(201).json({ success: true, message: 'Transaction created', data: { expense } });
 });
 
 exports.updateExpense = asyncHandler(async (req, res) => {
+  const existing = await Expense.findOne({ _id: req.params.id, user: req.user._id });
+  if (!existing) throw new AppError('Transaction not found', 404);
+
+  const updates = { ...req.body };
+  delete updates.user;
+
   const expense = await Expense.findOneAndUpdate(
     { _id: req.params.id, user: req.user._id },
-    req.body,
+    updates,
     { new: true, runValidators: true }
   );
-  if (!expense) throw new AppError('Transaction not found', 404);
+
+  await syncBudgetSpent(req.user._id, [existing.category, expense.category]);
+
   res.json({ success: true, message: 'Transaction updated', data: { expense } });
 });
 
 exports.deleteExpense = asyncHandler(async (req, res) => {
   const expense = await Expense.findOneAndDelete({ _id: req.params.id, user: req.user._id });
   if (!expense) throw new AppError('Transaction not found', 404);
+
+  await syncBudgetSpent(req.user._id, expense.category);
+
   res.json({ success: true, message: 'Transaction deleted' });
 });
 
@@ -70,18 +94,33 @@ exports.getBudgets = asyncHandler(async (req, res) => {
 });
 
 exports.createBudget = asyncHandler(async (req, res) => {
-  const budget = await Budget.create({ ...req.body, user: req.user._id });
-  res.status(201).json({ success: true, message: 'Budget created', data: { budget } });
+  const payload = { ...req.body };
+  delete payload.user;
+  const budget = await Budget.create({ ...payload, user: req.user._id });
+
+  await syncBudgetSpent(req.user._id, budget.category);
+  const updatedBudget = await Budget.findById(budget._id);
+
+  res.status(201).json({ success: true, message: 'Budget created', data: { budget: updatedBudget || budget } });
 });
 
 exports.updateBudget = asyncHandler(async (req, res) => {
+  const existing = await Budget.findOne({ _id: req.params.id, user: req.user._id });
+  if (!existing) throw new AppError('Budget not found', 404);
+
+  const updates = { ...req.body };
+  delete updates.user;
+
   const budget = await Budget.findOneAndUpdate(
     { _id: req.params.id, user: req.user._id },
-    req.body,
+    updates,
     { new: true, runValidators: true }
   );
-  if (!budget) throw new AppError('Budget not found', 404);
-  res.json({ success: true, message: 'Budget updated', data: { budget } });
+
+  await syncBudgetSpent(req.user._id, [existing.category, budget.category]);
+  const updatedBudget = await Budget.findById(budget._id);
+
+  res.json({ success: true, message: 'Budget updated', data: { budget: updatedBudget || budget } });
 });
 
 exports.deleteBudget = asyncHandler(async (req, res) => {

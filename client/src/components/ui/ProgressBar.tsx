@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/utils';
 
 interface ProgressBarProps {
@@ -9,7 +10,7 @@ interface ProgressBarProps {
   className?: string;
 }
 
-export default function ProgressBar({ value, max = 100, color = '#6366f1', size = 'md', showLabel, className }: ProgressBarProps) {
+function ProgressBar({ value, max = 100, color = '#6366f1', size = 'md', showLabel, className }: ProgressBarProps) {
   const percent = Math.min(100, Math.round((value / max) * 100));
   const heights = { sm: 'h-1.5', md: 'h-2.5', lg: 'h-4' };
 
@@ -30,3 +31,5 @@ export default function ProgressBar({ value, max = 100, color = '#6366f1', size 
     </div>
   );
 }
+
+export default memo(ProgressBar);

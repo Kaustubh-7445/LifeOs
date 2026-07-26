@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
 const config = require('./config');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const { sanitizeQuery } = require('./middleware/sanitize');
 
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
@@ -27,22 +28,20 @@ app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined'));
 const allowedOrigins = [
   config.clientUrl,
   'http://localhost:5173',
-];
+  'http://127.0.0.1:5173',
+].map((o) => o && o.replace(/\/$/, '')).filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
     
-    // Strip trailing slashes for comparison
     const sanitizedOrigin = origin.replace(/\/$/, '');
-    const isAllowed = allowedOrigins.includes(sanitizedOrigin) || 
-                      sanitizedOrigin.endsWith('.vercel.app') || 
-                      sanitizedOrigin === config.clientUrl;
+    const isAllowed = allowedOrigins.includes(sanitizedOrigin);
                       
     if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS policy'));
     }
   },
   credentials: true,
@@ -50,6 +49,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use('/api', sanitizeQuery);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -111,15 +111,17 @@ app.use('/api/notifications', notificationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const startServer = async () => {
-  await connectDB();
+if (require.main === module) {
+  const startServer = async () => {
+    await connectDB();
 
-  const PORT = config.port;
-  app.listen(PORT, () => {
-    console.log(`LifeOS Server running on port ${PORT} [${config.nodeEnv}]`);
-  });
-};
+    const PORT = config.port;
+    app.listen(PORT, () => {
+      console.log(`LifeOS Server running on port ${PORT} [${config.nodeEnv}]`);
+    });
+  };
 
-startServer();
+  startServer();
+}
 
 module.exports = app;

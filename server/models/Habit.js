@@ -24,4 +24,6 @@ const habitSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+habitSchema.index({ user: 1, isActive: 1 });
+
 module.exports = mongoose.model('Habit', habitSchema);

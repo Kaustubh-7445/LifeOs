@@ -22,4 +22,7 @@ const taskSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+taskSchema.index({ user: 1, status: 1, category: 1, priority: 1 });
+taskSchema.index({ user: 1, dueDate: 1 });
+
 module.exports = mongoose.model('Task', taskSchema);
