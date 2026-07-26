@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
-import AppleLoginButton from '@/components/auth/AppleLoginButton';
-import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
 
@@ -207,22 +205,10 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* OAuth Buttons Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* OAuth Container */}
+        <div className="w-full flex justify-center">
           <GoogleLoginButton onSuccess={handleGoogleLogin} text="signin_with" />
-          <AppleLoginButton
-            onSuccess={(email, name) => handleSocialAuthSelect(email, name || 'Apple User')}
-            onFallbackModal={() => handleOpenSocialModal('apple')}
-          />
         </div>
-
-        <SocialAuthModal
-          isOpen={isSocialModalOpen}
-          onClose={() => setIsSocialModalOpen(false)}
-          provider={socialProvider}
-          action="login"
-          onSelect={handleSocialAuthSelect}
-        />
       </motion.div>
 
       {/* Redirection Links */}

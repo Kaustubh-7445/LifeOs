@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
-import AppleLoginButton from '@/components/auth/AppleLoginButton';
-import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
 import logo from '@/assets/logo.png';
@@ -278,22 +276,10 @@ export default function RegisterPage() {
             </span>
           </div>
 
-          {/* OAuth Buttons Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* OAuth Container */}
+          <div className="w-full flex justify-center mb-4">
             <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
-            <AppleLoginButton
-              onSuccess={(email, name) => handleSocialAuthSelect(email, name || 'Apple User')}
-              onFallbackModal={() => handleOpenSocialModal('apple')}
-            />
           </div>
-
-          <SocialAuthModal
-            isOpen={isSocialModalOpen}
-            onClose={() => setIsSocialModalOpen(false)}
-            provider={socialProvider}
-            action="register"
-            onSelect={handleSocialAuthSelect}
-          />
 
           <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 leading-normal">
             By creating an account, you agree to our{' '}
