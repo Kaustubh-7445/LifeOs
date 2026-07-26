@@ -3,29 +3,8 @@ const User = require('../models/User');
 let clients = [];
 
 const fetchSocialAccounts = async () => {
-  const users = await User.find({}).sort({ lastLogin: -1, updatedAt: -1, createdAt: -1 });
-
-  return users.map(user => {
-    let provider = 'all';
-    if (user.googleId && !user.appleId) {
-      provider = 'google';
-    } else if (user.appleId && !user.googleId) {
-      provider = 'apple';
-    }
-
-    return {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar || '',
-      provider,
-      hasGoogle: !!user.googleId,
-      hasApple: !!user.appleId,
-      isVerified: !!user.isVerified,
-      lastLogin: user.lastLogin || user.updatedAt,
-      createdAt: user.createdAt,
-    };
-  });
+  // Public broadcasting of all database user accounts is disabled for privacy & security
+  return [];
 };
 
 const addClient = async (res) => {
