@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { analyticsApi, aiApi } from '@/services';
 import { formatCurrency } from '@/utils';
 import { MobileMenuButton } from '@/components/layout/Sidebar';
+import NotificationsPanel from '@/components/layout/NotificationsPanel';
 import { useThemeStore } from '@/store';
 import toast from 'react-hot-toast';
 
@@ -151,8 +152,9 @@ export default function DashboardPage() {
             <input
               type="text"
               placeholder="Command + K to search..."
-              className="w-64 bg-slate-100 dark:bg-[#161b26] hover:bg-slate-200 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border border-slate-200 dark:border-white/5 focus:border-blue-500/50 rounded-full py-1.5 pl-10 pr-4 text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-all"
-              onClick={() => toast.success('Search coming soon')}
+              className="w-64 bg-slate-100 dark:bg-[#161b26] hover:bg-slate-200 dark:hover:bg-[#1a202d] focus:bg-white dark:focus:bg-[#1e2536] border border-slate-200 dark:border-white/5 focus:border-blue-500/50 rounded-full py-1.5 pl-10 pr-4 text-xs text-slate-800 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition-all cursor-pointer"
+              onClick={() => toast('Search feature coming soon!', { icon: '🔍' })}
+              readOnly
             />
           </div>
 
@@ -174,14 +176,8 @@ export default function DashboardPage() {
             {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
-          {/* Notification Bell */}
-          <button 
-            onClick={() => toast.success('Notifications opened')}
-            className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-250 dark:bg-[#161b26] dark:hover:bg-[#1e2536] dark:border-white/5 rounded-xl text-slate-400 hover:text-slate-805 dark:hover:text-white relative transition-colors cursor-pointer"
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-          </button>
+          {/* Real Interactive Notification Bell & Panel */}
+          <NotificationsPanel />
         </div>
       </div>
 
