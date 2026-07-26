@@ -45,12 +45,14 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
       // Initialize Google Identity Services for official accounts.google.com popup
       window.google.accounts.id.initialize({ client_id: clientId, callback: handleCallback });
       
-      // Render official Google button
+      // Render official Google button with sleek dark pill design
       ref.current.innerHTML = '';
       window.google.accounts.id.renderButton(ref.current, {
-        theme: resolvedTheme === 'dark' ? 'filled_blue' : 'outline',
+        theme: resolvedTheme === 'dark' ? 'filled_black' : 'outline',
+        shape: 'pill',
         size: 'large',
-        width: ref.current.offsetWidth || 320,
+        logo_alignment: 'left',
+        width: ref.current.offsetWidth || 340,
         text,
       });
 
