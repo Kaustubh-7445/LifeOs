@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { useThemeStore } from '@/store';
 
 declare global {
@@ -41,10 +42,10 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
     const init = () => {
       if (!window.google || !ref.current) return;
       
-      // Initialize Google Identity Services
+      // Initialize Google Identity Services for official accounts.google.com popup
       window.google.accounts.id.initialize({ client_id: clientId, callback: handleCallback });
       
-      // Render standard visible Google Button
+      // Render official Google button
       ref.current.innerHTML = '';
       window.google.accounts.id.renderButton(ref.current, {
         theme: resolvedTheme === 'dark' ? 'filled_blue' : 'outline',
@@ -53,12 +54,12 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
         text,
       });
 
-      // Prompt One Tap real-time accounts selector
+      // Prompt One Tap Google accounts selector popup
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
-          console.log('One Tap not displayed reason:', notification.getNotDisplayedReason());
+          console.log('Google One Tap not displayed reason:', notification.getNotDisplayedReason());
         } else if (notification.isSkippedMoment()) {
-          console.log('One Tap skipped reason:', notification.getSkippedReason());
+          console.log('Google One Tap skipped reason:', notification.getSkippedReason());
         }
       });
     };
@@ -81,13 +82,23 @@ export default function GoogleLoginButton({ onSuccess, text = 'signin_with' }: G
     document.body.appendChild(script);
   }, [clientId, handleCallback, text, resolvedTheme]);
 
+  const handleClickWithoutClientId = () => {
+    toast.error('To log in with Google, please add VITE_GOOGLE_CLIENT_ID in client/.env for accounts.google.com OAuth');
+  };
+
   if (!clientId) {
     return (
-      <p className="text-xs text-center text-gray-400">
-        Add VITE_GOOGLE_CLIENT_ID to enable Google sign-in
-      </p>
+      <button
+        type="button"
+        onClick={handleClickWithoutClientId}
+        className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-[#0d111d] dark:hover:bg-[#101423] border border-slate-200 dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <img src="https://www.google.com/favicon.ico" alt="Google" className="w-3.5 h-3.5" />
+        Google
+      </button>
     );
   }
 
   return <div ref={ref} className="w-full flex justify-center min-h-[40px]" />;
 }
+

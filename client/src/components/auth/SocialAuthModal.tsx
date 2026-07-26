@@ -111,30 +111,7 @@ export default function SocialAuthModal({
               </p>
             </div>
 
-            {/* Saved Device Account Option (Only for THIS specific device/browser) */}
-            {lastUserEmail && (
-              <div className="mb-5 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-500/30">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1">
-                  <UserCheck className="w-3 h-3" />
-                  Your Device Account
-                </p>
-                <button
-                  type="button"
-                  onClick={() => handleAccountSelect(lastUserEmail, lastUserEmail.split('@')[0])}
-                  className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#0d111d] border border-slate-200 dark:border-white/10 hover:border-blue-500/50 transition-all text-left cursor-pointer group"
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-500 transition-colors truncate">
-                      {lastUserEmail}
-                    </p>
-                    <p className="text-[10px] text-slate-400">Continue with this saved account</p>
-                  </div>
-                  <span className="text-xs font-bold text-blue-500 shrink-0">&rarr;</span>
-                </button>
-              </div>
-            )}
-
-            {/* Form to enter Original Google Account */}
+            {/* Form to enter Original Account Email */}
             <form onSubmit={handleCustomSubmit} className="space-y-3.5">
               {/* Custom Email input */}
               <div className="space-y-1.5">
