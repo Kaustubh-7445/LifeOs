@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import AppleLoginButton from '@/components/auth/AppleLoginButton';
 import SocialAuthModal from '@/components/auth/SocialAuthModal';
 import { authApi } from '@/services';
 import { useAuthStore } from '@/store';
@@ -280,15 +281,10 @@ export default function RegisterPage() {
           {/* OAuth Buttons Grid */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <GoogleLoginButton onSuccess={handleGoogleLogin} text="signup_with" />
-
-            <button
-              type="button"
-              onClick={() => handleOpenSocialModal('apple')}
-              className="w-full py-2.5 bg-slate-550/5 hover:bg-slate-550/10 border border-slate-200 dark:bg-[#161b26] dark:hover:bg-[#1a202d] dark:border-white/5 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span className="text-sm shrink-0"></span>
-              Apple ID
-            </button>
+            <AppleLoginButton
+              onSuccess={(email, name) => handleSocialAuthSelect(email, name || 'Apple User')}
+              onFallbackModal={() => handleOpenSocialModal('apple')}
+            />
           </div>
 
           <SocialAuthModal
